@@ -10,6 +10,9 @@ const check = (name, ok, extra = '') => {
   results.push(`${ok ? 'PASS' : 'FAIL'}  ${name}${extra ? '  — ' + extra : ''}`);
 };
 
+const CLIENT_URL = process.env.CLIENT_URL ?? 'http://localhost:4173/';
+const LAB_URL = process.env.LAB_URL ?? 'http://localhost:4174/';
+
 async function main() {
   const browser = await firefox.launch({
     executablePath: '/home/saoud/.cache/ms-playwright/firefox-1539/firefox/firefox',
@@ -21,7 +24,7 @@ async function main() {
   page.on('pageerror', (e) => errors.push(String(e)));
 
   // ---------- client: full round ----------
-  await page.goto('http://localhost:4173/', { waitUntil: 'networkidle' });
+  await page.goto(CLIENT_URL, { waitUntil: 'networkidle' });
   check('client loads', (await page.title()).includes('البواردي'));
 
   await page.getByText('ادخل الشارع').click();
@@ -107,7 +110,7 @@ async function main() {
   await page.keyboard.up('Space');
 
   // ---------- sensor-lab: fallback path ----------
-  await page.goto('http://localhost:4174/', { waitUntil: 'networkidle' });
+  await page.goto(LAB_URL, { waitUntil: 'networkidle' });
   check('sensor-lab loads', (await page.title()).includes('مختبر'));
   await page.locator('#startBtn').click();
   await page.waitForTimeout(1000);
