@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1a120b">
+<title>تقدّم بناء «البواردي»</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Segoe UI", Tahoma, sans-serif;
+    background: #1a120b;
+    background-image: radial-gradient(ellipse at 50% 0%, #3a2a18 0%, #1a120b 60%);
+    color: #e8d9b5;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 60px;
+  }
+  .card {
+    width: 100%;
+    max-width: 640px;
+    background: #241a10;
+    border: 2px solid #5c4325;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,.5);
+  }
+  h1 { text-align: center; font-size: 1.6rem; color: #f2c14e; letter-spacing: 1px; margin-bottom: 4px; }
+  .sub { text-align: center; color: #a08c6a; font-size: .85rem; margin-bottom: 18px; }
+  .pct-wrap { display: flex; align-items: center; gap: 16px; }
+  .pct {
+    font-size: 4rem;
+    font-weight: 800;
+    color: #f2c14e;
+    font-variant-numeric: tabular-nums;
+    min-width: 180px;
+    text-align: center;
+    text-shadow: 0 0 30px rgba(242,193,78,.25);
+  }
+  .bar-box { flex: 1; }
+  .bar {
+    height: 22px;
+    background: #120c07;
+    border: 1px solid #5c4325;
+    border-radius: 11px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #8a5a20, #f2c14e);
+    border-radius: 11px;
+    transition: width .8s ease;
+  }
+  .phase {
+    margin-top: 10px;
+    font-size: 1rem;
+    color: #e8d9b5;
+    text-align: center;
+  }
+  .pulse { display: inline-block; width: 9px; height: 9px; background: #6ec06e; border-radius: 50%; margin-left: 8px; animation: blink 1.6s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
+  h2 { font-size: 1rem; color: #c9a45a; margin-bottom: 10px; border-bottom: 1px solid #5c4325; padding-bottom: 6px; }
+  ul.tasks { list-style: none; }
+  ul.tasks li {
+    padding: 8px 10px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    background: #1c130b;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: .95rem;
+  }
+  .tick { width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: .8rem; flex: none; }
+  .tick.done { background: #2d5a2d; color: #cdeacd; }
+  .tick.now { background: #8a5a20; color: #ffe9b0; animation: blink 1.4s infinite; }
+  .tick.todo { background: #120c07; color: #7a6a4d; border: 1px dashed #5c4325; }
+  ul.log { list-style: none; max-height: 240px; overflow-y: auto; font-size: .82rem; }
+  ul.log li { padding: 5px 8px; border-bottom: 1px dashed #3a2a18; color: #b9a67f; }
+  ul.log li .t { color: #7a6a4d; margin-left: 6px; font-variant-numeric: tabular-nums; }
+  footer { margin-top: 20px; text-align: center; font-size: .75rem; color: #6a583d; }
+  .err { color: #e06c5a; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>🔫 «البواردي»</h1>
+    <div class="sub">مبارزات الكاوبوي بالجوال — تقدّم البناء المباشر</div>
+    <div class="pct-wrap">
+      <div class="pct" id="pct">…%</div>
+      <div class="bar-box">
+        <div class="bar"><div class="bar-fill" id="fill"></div></div>
+        <div class="phase" id="phase"><span class="pulse"></span>جاري الاتصال…</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>المراحل</h2>
+    <ul class="tasks" id="tasks"></ul>
+  </div>
+
+  <div class="card">
+    <h2>سجل العمل</h2>
+    <ul class="log" id="log"></ul>
+  </div>
+
+  <footer>هذه الصفحة تتحدث تلقائياً كل ٣ ثوانٍ · البواردي · Sep 2026</footer>
+
+<script>
+let lastPct = -1;
+async function tick() {
+  try {
+    const r = await fetch('status.json', { cache: 'no-store' });
+    const s = await r.json();
+    if (s.pct !== lastPct) {
+      lastPct = s.pct;
+      document.getElementById('pct').textContent = s.pct + '%';
+      document.getElementById('fill').style.width = s.pct + '%';
+    }
+    document.getElementById('phase').innerHTML = '<span class="pulse"></span>' + (s.phase || '');
+    const firstOpen = (s.tasks || []).findIndex(t => !t.done);
+    document.getElementById('tasks').innerHTML = (s.tasks || []).map((t, i) =>
+      '<li><span class="tick ' + (t.done ? 'done' : (i === firstOpen ? 'now' : 'todo')) + '">' +
+      (t.done ? '✓' : (i === firstOpen ? '●' : '')) + '</span>' + t.t + '</li>'
+    ).join('');
+    document.getElementById('log').innerHTML = (s.log || []).slice(-40).reverse().map(l =>
+      '<li' + (l.err ? ' class="err"' : '') + '><span class="t">' + l.time + '</span>' + l.msg + '</li>'
+    ).join('');
+    document.title = 'البواردي — ' + s.pct + '%';
+  } catch (e) {
+    document.getElementById('phase').textContent = 'انقطع الاتصال — أعيد المحاولة…';
+  }
+}
+tick();
+setInterval(tick, 3000);
+</script>
+</body>
+</html>
