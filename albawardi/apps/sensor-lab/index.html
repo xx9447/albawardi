@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#14100a">
+  <title>مختبر الحساسات — البواردي</title>
+  <style>
+    :root { color-scheme: dark; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      background: #14100a;
+      color: #e8d9b5;
+      padding: 12px;
+      padding-bottom: 40px;
+      touch-action: manipulation;
+    }
+    h1 { font-size: 1.15rem; color: #f2c14e; text-align: center; margin-bottom: 2px; }
+    .sub { text-align: center; font-size: .75rem; color: #a08c6a; margin-bottom: 10px; }
+    .card {
+      background: #1e1610;
+      border: 1px solid #4a3820;
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+    h2 { font-size: .9rem; color: #c9a45a; margin-bottom: 8px; }
+    button {
+      font-family: inherit;
+      font-size: 1rem;
+      padding: 12px 16px;
+      min-height: 48px;
+      background: #f2c14e;
+      color: #241a10;
+      border: none;
+      border-radius: 10px;
+      width: 100%;
+      font-weight: 700;
+    }
+    button.secondary { background: #3a2a18; color: #e8d9b5; }
+    button:disabled { opacity: .4; }
+    .row { display: flex; gap: 8px; margin-bottom: 6px; }
+    .kv { display: flex; justify-content: space-between; font-size: .82rem; padding: 3px 0; font-variant-numeric: tabular-nums; }
+    .kv b { color: #f2c14e; font-weight: 600; }
+    .warn { color: #e06c5a; }
+    .ok { color: #6ec06e; }
+    .slider-row { margin: 8px 0; font-size: .8rem; }
+    .slider-row label { display: flex; justify-content: space-between; margin-bottom: 3px; }
+    input[type="range"] { width: 100%; }
+    .stage {
+      position: relative;
+      height: 240px;
+      background: #0d0a06;
+      border: 1px solid #4a3820;
+      border-radius: 10px;
+      overflow: hidden;
+      touch-action: none;
+    }
+    .reticle {
+      position: absolute;
+      left: 50%; top: 50%;
+      width: 34px; height: 34px;
+      margin: -17px 0 0 -17px;
+      border: 2px solid #f2c14e;
+      border-radius: 50%;
+      box-shadow: 0 0 12px rgba(242,193,78,.4);
+    }
+    .reticle::after {
+      content: "";
+      position: absolute;
+      left: 50%; top: 50%;
+      width: 4px; height: 4px;
+      margin: -2px 0 0 -2px;
+      background: #f2c14e;
+      border-radius: 50%;
+    }
+    .holster-badge {
+      position: absolute;
+      left: 8px; bottom: 8px;
+      font-size: .75rem;
+      background: #241a10;
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 1px solid #4a3820;
+    }
+    table { width: 100%; font-size: .72rem; border-collapse: collapse; }
+    td { padding: 2px 4px; border-bottom: 1px dashed #3a2a18; font-variant-numeric: tabular-nums; }
+    .footnote { font-size: .7rem; color: #7a6a4d; margin-top: 6px; line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <h1>🔬 مختبر الحساسات — البواردي</h1>
+  <div class="sub">المرحلة 0: نفحح الجوال والمتصفح قبل بناء اللعبة</div>
+
+  <div class="card" id="permCard">
+    <h2>١) الصلاحيات</h2>
+    <div class="kv"><span>المتصفح المكتشف</span><b id="browserName">—</b></div>
+    <div class="kv"><span>داخل تطبيق؟</span><b id="inApp">—</b></div>
+    <div class="kv"><span>HTTPS</span><b id="isHttps">—</b></div>
+    <div style="height:8px"></div>
+    <button id="startBtn">ابدأ — طلح صلاحية الحركة</button>
+    <div class="footnote" id="permNote">
+      على الآيفون: لازم تضغط الزر بنفسك عشان يظهر طلب صلاحية الحركة. إذا رفضت، الصلاحية ترجع بإعادة تحميل الصفحة.
+      على أندرويد: نتأكد بس إن القراءات توصل خلال 500ms.
+    </div>
+  </div>
+
+  <div class="card" id="liveCard" hidden>
+    <h2>٢) القراءات الحية</h2>
+    <div class="row">
+      <div style="flex:1"><div class="kv"><span>devicemotion</span><b id="hzMotion">0 Hz</b></div></div>
+      <div style="flex:1"><div class="kv"><span>deviceorientation</span><b id="hzOrient">0 Hz</b></div></div>
+    </div>
+    <table>
+      <tr><td>accel inc. gravity (m/s²)</td><td id="accVal">—</td></tr>
+      <tr><td>rotationRate (deg/s)</td><td id="rotVal">—</td></tr>
+      <tr><td>alpha / beta / gamma (deg)</td><td id="eulerVal">—</td></tr>
+      <tr><td>screen.orientation</td><td id="screenOrient">—</td></tr>
+      <tr><td>ثبات أحداث اللمس؟</td><td id="pointerOk">—</td></tr>
+    </table>
+  </div>
+
+  <div class="card" id="aimCard" hidden>
+    <h2>٣) التصويب (جاذبة + جيروسكوب، بدون alpha/beta/gamma)</h2>
+    <div class="stage" id="stage">
+      <div class="reticle" id="reticle"></div>
+      <div class="holster-badge" id="holsterBadge">الجراب: —</div>
+    </div>
+    <div class="slider-row">
+      <label><span>One Euro minCutoff</span><span id="vMin">1.2</span></label>
+      <input type="range" id="sMin" min="0.1" max="5" step="0.1" value="1.2">
+    </div>
+    <div class="slider-row">
+      <label><span>One Euro beta</span><span id="vBeta">0.05</span></label>
+      <input type="range" id="sBeta" min="0.001" max="0.5" step="0.001" value="0.05">
+    </div>
+    <div class="slider-row">
+      <label><span>الحساسية (×)</span><span id="vSens">1.0</span></label>
+      <input type="range" id="sSens" min="0.5" max="2" step="0.1" value="1">
+    </div>
+    <div class="slider-row">
+      <label><span>دخول الجراب (° تحت الأفق)</span><span id="vEnter">60</span></label>
+      <input type="range" id="sEnter" min="40" max="90" step="1" value="60">
+    </div>
+    <div class="slider-row">
+      <label><span>خروج الجراب (° تحت الأفق)</span><span id="vExit">35</span></label>
+      <input type="range" id="sExit" min="15" max="55" step="1" value="35">
+    </div>
+    <div class="footnote">
+      الإمالة عمودياً من الجاذبة (مفلترة) مدموجة مع الجيروسكوب بفلتر تكاملي. الدوران الأفقي من تكامل
+      <code>rotationRate</code> فقط — ما نستخدم alpha/beta/gamma للتصويب (قفل المحاور عند المسك العمودي).
+      زر «أعد ضبط التصويب» يرجع المؤشر للنص ويعيد تكامل الجيروسكوب.
+    </div>
+    <div style="height:8px"></div>
+    <div class="row">
+      <button class="secondary" id="recenterBtn" style="min-height:44px">أعد ضبط التصويب</button>
+    </div>
+    <div class="kv"><span>الإمالة (tilt)</span><b id="tiltVal">—</b></div>
+    <div class="kv"><span>الدوران الأفقي (yaw)</span><b id="yawVal">—</b></div>
+    <div class="kv"><span>حالة الجراب</span><b id="holsterState">—</b></div>
+  </div>
+
+  <div class="card" id="logCard" hidden>
+    <h2>٤) السجل والتصدير</h2>
+    <div class="kv"><span>قراءات مسجلة</span><b id="readCount">0</b></div>
+    <div style="height:8px"></div>
+    <button class="secondary" id="exportBtn">تصدير السجل (JSON)</button>
+    <div class="footnote">
+      السجل يحتوي كل قراءة مع <code>timeStamp</code> ومعلومات الجهاز — هذا الملف هو اللي نعبئ منه
+      جدول «جهاز × متصفح × يشتغل؟ × Hz».
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
