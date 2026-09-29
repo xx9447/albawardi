@@ -61,6 +61,32 @@
     color: #e8d9b5;
     text-align: center;
   }
+  .play-btn {
+    display: block;
+    text-align: center;
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #241a10;
+    background: linear-gradient(180deg, #f2c14e, #d9a63b);
+    padding: 16px;
+    border-radius: 12px;
+    text-decoration: none;
+    box-shadow: 0 6px 22px rgba(242,193,78,.3);
+    animation: glow 2.5s ease-in-out infinite;
+  }
+  .play-btn:active { transform: scale(.97); }
+  @keyframes glow { 0%,100% { box-shadow: 0 6px 22px rgba(242,193,78,.3); } 50% { box-shadow: 0 6px 30px rgba(242,193,78,.55); } }
+  .lab-link {
+    display: block;
+    text-align: center;
+    margin-top: 10px;
+    font-size: .85rem;
+    color: #c9a45a;
+    text-decoration: none;
+    padding: 8px;
+    border: 1px dashed #5c4325;
+    border-radius: 8px;
+  }
   .pulse { display: inline-block; width: 9px; height: 9px; background: #6ec06e; border-radius: 50%; margin-left: 8px; animation: blink 1.6s infinite; }
   @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
   h2 { font-size: 1rem; color: #c9a45a; margin-bottom: 10px; border-bottom: 1px solid #5c4325; padding-bottom: 6px; }
@@ -97,6 +123,11 @@
         <div class="phase" id="phase"><span class="pulse"></span>جاري الاتصال…</div>
       </div>
     </div>
+  </div>
+
+  <div class="card">
+    <a class="play-btn" href="client/">🔫 تجربة النسخة الأولى</a>
+    <a class="lab-link" href="sensor-lab/">🔬 مختبر الحساسات — جرّب حساسات جوالك</a>
   </div>
 
   <div class="card">
